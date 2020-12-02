@@ -1,0 +1,95 @@
+<div class="container-md">
+    <div class="row">
+        <div class="col-12 text-center text-black">
+            <h1>The Burgers List!</h1>
+            <img src="/assets/img/itstooreal.png" alt="Image of a burger" width="250px" height="250px">
+            <h2>Add a Burger</h2>
+            <form class="create-form">
+                <div class="form-group">
+                    <label class="font-weight-bolder font-italic" for="ca">Burger Name:</label>
+                    <input type="text" id="ca" name="burgerName">
+                    <button class="btn btn-warning" type="submit">Add a Burger</button>
+                </div>
+                <div class="form-group">
+                    <input id="devoured" type="checkbox" name="devoured" value="0" checked style="display:none;">
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="row text-black">
+        <div class="col-sm-12 col-md-6">
+            <h2>Eat-Da-Burger!</h2>
+            <ul class="list-group list-group-flush ">
+                {{#each burgers}}
+                    {{#unless devoured}}
+                        <li class="list-group-item bg-transparent">
+                            {{burger_name}}
+
+                            <button class="change-devoured btn btn-danger" data-id="{{id}}" data-newdevoured="1">
+                                {{#if devoured}}devoured TIME!{{else}} Devour!{{/if}}
+                            </button>
+                        </li>
+
+                    {{/unless}}
+                {{/each}}
+            </ul>
+        </div>
+        <div class="col-sm-12 col-md-6">
+            <h2>Burgers that are Devoured</h2>
+
+            <ul class="list-group list-group-flush">
+                {{#each burgers}}
+                    {{#if devoured}}
+                        <li class="list-group-item bg-transparent"> {{burger_name}} </li>
+                    {{/if}}
+                {{/each}}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Make sure we wait to attach our handlers until the DOM is fully loaded.
+    $(function () {
+        $(".change-devoured").on("click", function (event) {
+            var id = $(this).data("id");
+            var newDevoured = $(this).data("newdevoured");
+            var newDevouredState = {
+                devoured: newDevoured
+            };
+            // Send the PUT request.
+            $.ajax("/api/burgers/" + id, {
+                type: "PUT",
+                data: newDevouredState
+            }).then(
+                    function () {
+                        console.log("changed devoured to", newDevoured);
+                        // Reload the page to get the updated list
+                        location.reload();
+                    }
+            );
+        });
+        $(".create-form").on("submit", function (event) {
+            // Make sure to preventDefault on a submit event.
+            event.preventDefault();
+            var newBurger = {
+                burger_name: $("#ca").val().trim(),
+                devoured: $("[name=devoured]:checked").val().trim()
+            };
+            // Send the POST request.
+            $.ajax("/api/burgers", {
+                type: "POST",
+                data: newBurger
+            }).then(
+                    function () {
+                        console.log("created new burger");
+                        // Reload the page to get the updated list
+                        location.reload();
+                    }
+            );
+        });
+    });
+</script>
